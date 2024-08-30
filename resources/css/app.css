@@ -1,3 +1,127 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+* {
+    scrollbar-color: hsl(var(--scrollbar-thumb)) hsl(var(--scrollbar-track));
+    scrollbar-width: var(--scrollbar-width);
+}
+.font-body {
+    font-family: var(--font-body),ui-sans-serif,system-ui,sans-serif,apple color emoji,segoe ui emoji,segoe ui symbol,noto color emoji;
+}
+@mixin conic-gradient($position, $colors...) {
+    background: conic-gradient($position, $colors...);
+}
+
+:root {
+    --primary: 255 63% 73%;
+    --primary-foreground: 0 0% 255%;
+    --secondary: 266 100% 76%;
+    --secondary-foreground: 0 0% 100%;
+    --input-background: 0 0% 100%;
+    --input-border: 0 0% 100%;
+    /* --card-background: 0, 0%, 87.5%; */ /* hsl(0, 0%, 87.5%) */
+    --card-background: 0, 0%, 100%; /* hsl(0, 0%, 100%) */
+    --card-border: 0 0% 0% / 10%;
+    --folder-background: var(--card-background);
+    --label: 0 0% 0%;
+    --clay: 0 0% 100%;
+
+    /* --background: 223 78% 98%; */
+    --background: 220, 14.3%, 95.9%; /* hsl(220, 14.3%, 95.9%) */
+    --foreground: 232 17% 45%;
+
+    --border: 232 17% 45% / 10%;
+
+    --headings-font-weight: 500;
+
+    --h2-font-size: 1.3125rem; /* 21px */
+
+    --h3-font-size: 1.25rem; /* 20px */
+
+    --navbar-fs: theme('fontSize.2xs');
+    --navbar-ps: theme('spacing.9');
+    --navbar-pe: theme('spacing.20');
+    --navbar-rounded-se: 30px;
+    --navbar-rounded-ee: 30px;
+    --navbar-background: 0 0% 0%;
+    --navbar-foreground: 221 14% 49%;
+    --navbar-foreground-hover: 0 0% 100%;
+    --navbar-link-pe: 0px;
+    --navbar-link-ps: 0px;
+    --navbar-icon-foreground-hover: var(--primary);
+    --navbar-icon-foreground-active: var(--primary);
+    --navbar-border: 0 0% 0% / 0%;
+    --navbar-divider: 0 0% 100% / 16%;
+    --navbar-icon-size: 1.35rem;
+
+    --switcher-ball: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23ffffff'/%3e%3c/svg%3e");
+    --switcher-ball-active: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23ffffff'/%3e%3c/svg%3e");
+}
+
+.theme-dark {
+    --primary: 255 63% 73%;
+    /* --primary-foreground: 0 0% 255%; */
+    --primary-foreground: 0, 14.3%, 90.4%;
+    --secondary: 266 100% 76%;
+    --secondary-foreground: 0 0% 100%;
+    --input-background: 248 11% 15%;
+    --input-border: 248 11% 15%;
+    /* --card-background: 252 14% 8%; */
+    --card-background: 215, 27.9%, 16.9%; /* hsl(215, 27.9%, 16.9%) */
+    --folder-background: var(--card-background);
+    --label: 0 0% 100%;
+    --clay: 0 0% 0%;
+
+    /* --background: 0 0% 0%; */
+    --background: 220.9, 39.3%, 11%; /* hsl(220.9, 39.3%, 11%) */
+    --foreground: 232 11% 66%;
+    --border: 0 0% 100% / 18%;
+    --navbar-foreground: 221 14% 49%;
+    --navbar-border: var(--navbar-background);
+    --navbar-background-hover: ;
+    --navbar-foreground-hover: 0 0% 100%;
+
+    --switcher-ball: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23ffffff'/%3e%3c/svg%3e");
+    --switcher-ball-active: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='2' fill='%23000000'/%3e%3c/svg%3e");
+}
+
+.lqd-chat-send-btn {
+    @include conic-gradient(from 185.98deg at bottom center,
+        #6FB3C9 20%,
+        #BA86FF 80%);
+}
+
+.lqd-chat-ai-bubble {
+    --clay: 249 100% 96%;
+}
+
+.lqd-chat-form {
+    @apply dark:bg-background/95 dark:backdrop-blur-lg shadow-none;
+}
+
+.chats-wrap {
+    @apply gap-6;
+
+    >.lqd-card {
+        @apply rounded-6xl;
+    }
+
+    .lqd-chat-form-inputs-container {
+        @apply bg-input-background border-border dark:border-input-border;
+    }
+}
+
+.theme-dark {
+    & .lqd-card {
+        @apply rounded-lg;
+        background-color: hsl(var(--folder-background));
+        color: hsl(var(--primary-foreground));
+    }
+
+    & .lqd-card {
+        @apply rounded-lg;
+        background-color: hsl(var(--folder-background));
+        color: hsl(var(--primary-foreground));
+    }
+}
