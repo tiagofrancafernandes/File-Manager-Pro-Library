@@ -7,24 +7,26 @@ if (!function_exists('hashids')) {
      * function hashids
      *
      * @param string $salt
-     * @param int $minHashLength
+     * @param ?int $minHashLength
      * @param string $alphabet
      *
      * @return Hashids
      */
     function hashids(
         string $salt = '',
-        int $minHashLength = 0,
+        ?int $minHashLength = null,
         string $alphabet = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890',
     ): Hashids {
+        $minHashLength = !$minHashLength || $minHashLength < 3 ? 15 : $minHashLength;
+
         /**
          * @var Hashids $hashids
          */
-        return app(Hashids::class, [
+        return new Hashids(
             $salt,
             $minHashLength,
             $alphabet,
-        ]);
+        );
     }
 }
 

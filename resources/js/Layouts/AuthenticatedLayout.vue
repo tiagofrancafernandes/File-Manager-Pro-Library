@@ -9,6 +9,13 @@ import ToggleDarkMode from '@/Layouts/parts/ToggleDarkMode.vue';
 import { Link } from '@inertiajs/vue3';
 
 const showingNavigationDropdown = ref(false);
+import { onMounted } from 'vue';
+import { initFlowbite } from 'flowbite';
+
+// initialize components based on data attribute selectors
+onMounted(() => {
+    initFlowbite();
+})
 </script>
 
 <template>
@@ -35,6 +42,14 @@ const showingNavigationDropdown = ref(false);
                                 </NavLink>
                                 <NavLink :href="route('files.index')" :active="route().current('files.index')">
                                     Files
+                                </NavLink>
+
+                                <NavLink :href="route('files.temp_index')" :active="route().current('files.temp_index')">
+                                    Temp Files
+                                </NavLink>
+
+                                <NavLink :href="route('files.upload')" :active="route().current('files.upload')">
+                                    Upload files
                                 </NavLink>
                             </div>
                         </div>
@@ -125,6 +140,13 @@ const showingNavigationDropdown = ref(false);
                         </ResponsiveNavLink>
                         <ResponsiveNavLink :href="route('files.index')" :active="route().current('files.index')">
                             Files
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink :href="route('files.temp_index')" :active="route().current('files.temp_index')">
+                            Temp Files
+                        </ResponsiveNavLink>
+
+                        <ResponsiveNavLink :href="route('files.upload')" :active="route().current('files.upload')">
+                            Upload files
                         </ResponsiveNavLink>
                     </div>
 

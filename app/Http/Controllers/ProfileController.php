@@ -60,4 +60,24 @@ class ProfileController extends Controller
 
         return Redirect::to('/');
     }
+
+    public function updateProfileImage(Request $request)
+    {
+        $request->validate([
+            'profile_image' => 'required|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
+        ]);
+
+        dd($request);//TODO
+
+        if ($request->hasFile('profile_image')) {
+            $image = $request->file('profile_image');
+            $imageName = time() . '.' . $image->extension();
+            $image->storeAs('public/profile_images', $imageName);
+
+            // Atualize o campo de imagem do usuário
+            auth()->user()->update(['photo_url' => 'storage/profile_images/' . $imageName]);
+        }
+
+        return redirect()->back()->with('success', 'Imagem de perfil atualizada com sucesso!');
+    }
 }

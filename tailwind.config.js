@@ -1,6 +1,7 @@
 import defaultTheme from 'tailwindcss/defaultTheme';
 import defaultConfig from './tailwind.default.config';
 import forms from '@tailwindcss/forms';
+import flowbite from 'flowbite/plugin';
 
 /** @type {import('tailwindcss').Config} */
 export default {
@@ -11,6 +12,8 @@ export default {
         './resources/js/**/*.vue',
         './resources/js/**/*.js',
         './public/assets/js/**/*.js',
+        './node_modules/flowbite-vue/**/*.{js,jsx,ts,tsx,vue}',
+        './node_modules/flowbite/**/*.{js,jsx,ts,tsx}'
     ],
 
     darkMode: [ 'class', '.theme-dark' ],
@@ -202,5 +205,8 @@ export default {
         },
     },
 
-    plugins: [forms],
+    plugins: [
+        forms,
+        flowbite,
+    ],
 };

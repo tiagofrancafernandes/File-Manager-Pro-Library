@@ -1,10 +1,10 @@
 <?php
 
+use Inertia\Inertia;
+use Illuminate\Support\Facades\Route;
+use Illuminate\Foundation\Application;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\ProfileController;
-use Illuminate\Foundation\Application;
-use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
 
 /*
 |--------------------------------------------------------------------------
@@ -32,6 +32,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+    Route::post('/profile_image', [ProfileController::class, 'updateProfileImage'])->name('update_profile_image');
 });
 
 Route::middleware([
@@ -41,6 +42,12 @@ Route::middleware([
     ->name('files.')
     ->group(function () {
         Route::get('/', [FileController::class, 'index'])->name('index');
+        Route::get('/temp', [FileController::class, 'tempIndex'])->name('temp_index');
+        Route::get('/file/s/{storageItem}/{mode?}', [FileController::class, 'showSigned'])->name('showSigned')->middleware('signed');
+        Route::get('/upload', [FileController::class, 'upload'])->name('upload');
+        Route::post('/upload', [FileController::class, 'uploadFiles'])->name('upload_process');
+        Route::get('/render/{hashedid}', [FileController::class, 'renderPdfProtected'])
+            ->name('render_pdf_protected');
     });
 
 require __DIR__ . '/auth.php';
