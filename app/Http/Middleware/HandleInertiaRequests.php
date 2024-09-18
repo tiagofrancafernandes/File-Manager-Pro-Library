@@ -4,6 +4,7 @@ namespace App\Http\Middleware;
 
 use Illuminate\Http\Request;
 use Inertia\Middleware;
+use Arr;
 
 class HandleInertiaRequests extends Middleware
 {
@@ -33,6 +34,15 @@ class HandleInertiaRequests extends Middleware
             ...parent::share($request),
             'auth' => [
                 'user' => $request->user(),
+            ],
+            'config' => [
+                'app' => Arr::except(config('app'), [
+                    'key',
+                    'cipher',
+                    'maintenance',
+                    'providers',
+                    'aliases',
+                ]),
             ],
         ];
     }

@@ -13,7 +13,7 @@ use Illuminate\Support\Str;
 
 class FileController extends Controller
 {
-    public function index(Request $request)
+    public function wipIndex(Request $request)
     {
         $fakeItem = function (array $data = []) {
             $name = $data['name'] ?? null;
@@ -65,19 +65,22 @@ class FileController extends Controller
             }) // Advanced
             ->values();
 
-        return Inertia::render('Files/Index', [
+        return Inertia::render('Files/WipIndex', [
             'items' => $items,
         ]);
     }
 
-    public function tempIndex(Request $request)
+    public function index(Request $request)
     {
-        return Inertia::render('Files/TempIndex', [
+        return Inertia::render('Files/Index', [
+            'pageTitle' => __('Files'),
             'items' => StorageItem::where(
                 'user_id',
                 $request?->user()?->id
-            )->orderBy('type_enum', 'asc')
-            ->paginate(100),
+            )
+                ->orderBy('type_enum', 'asc')
+                ->orderBy('favorite', 'asc')
+                ->paginate(100),
         ]);
     }
 
@@ -137,7 +140,7 @@ class FileController extends Controller
         $files = \Arr::wrap($request->file('files_to_upload'));
 
         if (!$files) {
-            return redirect()->route('files.temp_index')->with('error', __('Invalid upload files'));
+            return redirect()->route('files.index')->with('error', __('Invalid upload files'));
         }
 
         $storedFiles = [];
@@ -156,7 +159,7 @@ class FileController extends Controller
             );
         }
 
-        return redirect()->route('files.temp_index')->with('success', __('Files uploaded successfully'));
+        return redirect()->route('files.index')->with('success', __('Files uploaded successfully'));
     }
 
     public function renderPdfProtected(Request $request, string $hashedid)
@@ -172,5 +175,16 @@ class FileController extends Controller
         dd($path);
 
         return response()->file($path);
+    }
+
+    public function toggleFavorite(Request $request, string $hashedid)
+    {
+        $file = StorageItem::where('hashedid', $hashedid)->firstOrFail();
+
+        $file?->fill([
+            'favorite' => !$file?->favorite,
+        ])->save();
+
+        return response()->json($file);
     }
 }

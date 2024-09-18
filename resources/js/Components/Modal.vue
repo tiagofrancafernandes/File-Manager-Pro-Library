@@ -14,6 +14,10 @@ const props = defineProps({
         type: Boolean,
         default: true,
     },
+    parentClass: {
+        type: [String, Object, Array],
+        default: null,
+    },
 });
 
 const emit = defineEmits(['close']);
@@ -55,7 +59,19 @@ const maxWidthClass = computed(() => {
         lg: 'sm:max-w-lg',
         xl: 'sm:max-w-xl',
         '2xl': 'sm:max-w-2xl',
+        '50': 'sm:max-w-[50%]',
+        '75': 'sm:max-w-[75%]',
+        '80': 'sm:max-w-[80%]',
+        '100': 'sm:max-w-[100%]',
+        'full': 'sm:max-w-full',
     }[props.maxWidth];
+});
+
+const parentClass = computed(() => {
+    return [
+        maxWidthClass.value,
+        props.parentClass,
+    ];
 });
 </script>
 
@@ -87,7 +103,7 @@ const maxWidthClass = computed(() => {
                     <div
                         v-show="show"
                         class="mb-6 bg-white dark:bg-gray-800 rounded-lg overflow-hidden shadow-xl transform transition-all sm:w-full sm:mx-auto"
-                        :class="maxWidthClass"
+                        :class="parentClass"
                     >
                         <slot v-if="show" />
                     </div>

@@ -44,7 +44,10 @@ onMounted(() => {
                                     Files
                                 </NavLink>
 
-                                <NavLink :href="route('files.temp_index')" :active="route().current('files.temp_index')">
+                                <NavLink
+                                    v-if="$page?.props?.config?.app?.dev?.show_wip_features"
+                                    :href="route('wip.index')" :active="route().current('wip.index')"
+                                >
                                     Temp Files
                                 </NavLink>
 
@@ -141,7 +144,7 @@ onMounted(() => {
                         <ResponsiveNavLink :href="route('files.index')" :active="route().current('files.index')">
                             Files
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink :href="route('files.temp_index')" :active="route().current('files.temp_index')">
+                        <ResponsiveNavLink :href="route('files.index')" :active="route().current('files.index')">
                             Temp Files
                         </ResponsiveNavLink>
 

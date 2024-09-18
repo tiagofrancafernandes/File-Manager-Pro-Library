@@ -1,9 +1,11 @@
 <script setup lang="js">
+import { FwbDropdown, FwbListGroup, FwbListGroupItem } from 'flowbite-vue';
 import { router } from '@inertiajs/vue3';
-import { useSlots, useAttrs, ref } from 'vue';
+import { useSlots, useAttrs, ref, computed } from 'vue';
+import { mapItem } from '@/Pages/Files/helpers';
 import PdfFile from '@/Pages/Files/TypeIcons/PdfFile.vue';
 import Directory from '@/Pages/Files/TypeIcons/Directory.vue';
-import { FwbDropdown, FwbListGroup, FwbListGroupItem } from 'flowbite-vue';
+import Modal from '@/Components/Modal.vue';
 
 const props = defineProps({
     item: {
@@ -16,11 +18,23 @@ const props = defineProps({
     }
 });
 
+const uid = computed(() => Math.random().toString().slice(3));
+
 const slots = useSlots();
 const attrs = useAttrs();
 
 let showActions = ref(false);
 let itemData = ref(props.item);
+
+let showShareModal = ref(false);
+
+const closeShareModal = () => {
+    showShareModal.value = false;
+};
+
+const openShareModal = () => {
+    showShareModal.value = true;
+};
 
 const toggleShowActions = (event) => {
     console.log('toggleShowActions');
@@ -32,14 +46,57 @@ const hideShowActions = (event) => {
     showActions.value = false;
 }
 
-const toggleFavorite = (item) => {
-    console.log('item', item);
-    itemData.value.favorite = !itemData.value.favorite;
+const csrf = computed(() => {
+    return document.querySelector('meta[name="csrf-token"]')?.getAttribute('content');
+})
+
+const defaultHeaders = (toMerge = {}) => {
+    toMerge = toMerge && typeof toMerge === 'object' && !Array.isArray(toMerge) ? toMerge : {};
+
+    return {
+        'accept': 'application/json',
+        'content-type': 'application/json',
+        'X-CSRF-TOKEN': csrf.value,
+        ...toMerge,
+    };
+}
+
+const toggleFavorite = async () => {
+    // console.log('item', item);
+    // itemData.value.favorite = !itemData.value.favorite;
+    const response = await fetch(route('files.toggle_favorite', itemData.value?.hashedid), {
+        method: 'POST',
+        headers: defaultHeaders({}),
+    });
+
+    if (!response?.ok) {
+        console.error('Fail on favorite file');
+        return;
+    }
+
+    const data = await response.json();
+    let item = mapItem(data);
+
+    // TODO: validar se é um item válido
+
+    itemData.value = item;
 }
 
 const onClickOutside = (event) => {
     console.log('Clicked outside. Event: ', event);
 }
+
+let urlForProtectedRender = ref(null);
+
+const protectedRenderUrl = computed(() => {
+    if (!urlForProtectedRender.value) {
+        console.log('fetch to get urlForProtectedRender');
+        urlForProtectedRender.value = route('files.render_pdf_protected', itemData.value?.hashedid);
+        return urlForProtectedRender.value;
+    }
+
+    return urlForProtectedRender.value;
+});
 
 const openRenderedPdf = (file) => {
     file = file && typeof file === 'object' ? file : null;
@@ -48,16 +105,176 @@ const openRenderedPdf = (file) => {
         return null;
     }
 
-    router.visit(route('files.render_pdf_protected', file?.hashedid), {
+    router.visit(protectedRenderUrl.value, {
         method: 'get',
         data: {
             hashedid: file?.hashedid,
         }
     });
 }
+
+let shareMode = ref('url');
+
+const embedContent = computed(() => {
+    return `<a href="${protectedRenderUrl.value}">See the file</a>`;
+})
+
+let shareContent = computed(() => {
+    if (shareMode.value === 'url') {
+        return protectedRenderUrl.value;
+    }
+
+    if (shareMode.value === 'embed') {
+        return embedContent.value;
+    }
+
+    return '';
+});
+
+const copied = ref(false);
+const copyShareToClipboard = () => {
+  navigator.clipboard.writeText(shareContent.value)
+    .then(() => {
+        copied.value = true;
+        setTimeout(() => {
+            copied.value = false;
+        }, 2000);
+    })
+    .catch((err) => {
+        console.error('Erro ao copiar texto:', err);
+    });
+};
 </script>
 
 <template>
+    <Modal
+        v-if="showShareModal"
+        :show="true"
+        @close="closeShareModal"
+        :parentClass="'mt-24 mb-12'"
+        maxWidth="50"
+    >
+        <div class="hidden">
+            <div class="fixed inset-0 flex items-center justify-center"></div>
+        </div>
+        <div class="w-full min-h-96 p-5">
+            <div class="flex justify-between">
+                <h2 class=" w-10/12 text-xl font-medium text-gray-900 dark:text-gray-100">
+                    Sharing file
+                </h2>
+                <div class="flex justify-end">
+                    <button
+                        type="button"
+                        @click="closeShareModal"
+                        class="text-center flex items-center px-3 py-2 text-xs font-medium text-gray-100 bg-gray-800/70 dark:bg-gray-700/10 dark:hover:bg-gray-700/20 border shadow-sm border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-800 hover:text-blue-700 dark:hover:text-white rounded"
+                    >x</button>
+                </div>
+            </div>
+
+            <div class="w-full bg-gray-100 dark:bg-gray-700 my-2 rounded">
+                <div class="p-2">
+                    <h6 class="text-md text-gray-700 dark:text-white">Share mode {{ shareMode }}</h6>
+                    <div class="flex gap-4 mb-4">
+                        <div class="flex w-6/12 justify-start">
+                            <div class="flex justify-start items-center gap-x-0 p-3">
+                                <input v-model="shareMode" type="radio" name="shareMode" value="url" :id="`${uid}share_mode_url`">
+                                <label :for="`${uid}share_mode_url`" class="text-gray-700 dark:text-gray-200 cursor-pointer px-2 select-none">URL</label>
+                            </div>
+
+                            <div class="flex justify-start items-center gap-x-0 p-3">
+                                <input v-model="shareMode" type="radio" name="shareMode" value="embed" :id="`${uid}share_mode_embed`">
+                                <label :for="`${uid}share_mode_embed`" class="text-gray-700 dark:text-gray-200 cursor-pointer px-2 select-none">Embed</label>
+                            </div>
+                        </div>
+
+                        <div class="flex w-6/12 justify-end p-0">
+                            <button
+                                type="button"
+                                v-on:click="
+                                    openRenderedPdf(itemData)
+                                "
+                                class="w-fit flex items-center justify-start gap-2 px-4 py-1 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white border"
+                            >
+                                <svg
+                                    class="w-4 h-4"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                >
+                                    <path
+                                        stroke="currentColor"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="1.5"
+                                        d="M9.25 4.75H6.75C5.64543 4.75 4.75 5.64543 4.75 6.75V17.25C4.75 18.3546 5.64543 19.25 6.75 19.25H17.25C18.3546 19.25 19.25 18.3546 19.25 17.25V14.75"
+                                    ></path>
+                                    <path
+                                        stroke="currentColor"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="1.5"
+                                        d="M19.25 9.25V4.75H14.75"
+                                    ></path>
+                                    <path
+                                        stroke="currentColor"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                        stroke-width="1.5"
+                                        d="M19 5L11.75 12.25"
+                                    ></path>
+                                </svg>
+
+                                View rendered
+                            </button>
+                        </div>
+                    </div>
+
+
+                    <div class="flex flex-col gap-4 gap-y-1">
+                        <div class="flex w-full justify-end items-center gap-x-2">
+                            <div class="w-full min-h-5 py-0">
+                                <p v-if="copied" class="text-green-500 text-xs text-right m-0">Content copied successfully!</p>
+                            </div>
+
+                            <div class="flex w-48 justify-end items-end">
+                                <button
+                                    @click="copyShareToClipboard"
+                                    type="button"
+                                    class="w-28 text-center flex items-center px-3 py-2 text-xs font-medium text-gray-100 bg-gray-800/70 border-l shadow-sm border-gray-200 dark:border-gray-600 dark:text-gray-400 dark:bg-gray-800 hover:text-blue-700 dark:hover:text-white copy-to-clipboard-button rounded-md"
+                                >
+                                    <svg class="w-3.5 h-3.5 mr-2" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 18 20">
+                                        <path d="M5 9V4.13a2.96 2.96 0 0 0-1.293.749L.879 7.707A2.96 2.96 0 0 0 .13 9H5Zm11.066-9H9.829a2.98 2.98 0 0 0-2.122.879L7 1.584A.987.987 0 0 0 6.766 2h4.3A3.972 3.972 0 0 1 15 6v10h1.066A1.97 1.97 0 0 0 18 14V2a1.97 1.97 0 0 0-1.934-2Z"></path>
+                                        <path d="M11.066 4H7v5a2 2 0 0 1-2 2H0v7a1.969 1.969 0 0 0 1.933 2h9.133A1.97 1.97 0 0 0 13 18V6a1.97 1.97 0 0 0-1.934-2Z"></path>
+                                    </svg>
+                                    <span v-text="copied ? 'Copied' : 'Copy'"></span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="flex w-full p-0">
+                            <div class="w-full flex items-center justify-center">
+                                <textarea
+                                    v-show="shareMode === 'embed'"
+                                    class="w-full dark:text-gray-200 select-all resize-none text-sm p-2 ring-1 ring-slate-900/10 shadow-sm rounded-md dark:bg-slate-800 dark:ring-0 dark:highlight-white/5"
+                                    rows="3"
+                                    v-html="shareContent"
+                                    readonly
+                                ></textarea>
+
+                                <input
+                                    v-show="shareMode === 'url'"
+                                    class="w-full dark:text-gray-200 select-all resize-none text-sm p-2 ring-1 ring-slate-900/10 shadow-sm rounded-md dark:bg-slate-800 dark:ring-0 dark:highlight-white/5"
+                                    :value="shareContent"
+                                    type="text"
+                                    readonly
+                                />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </Modal>
     <div class="flex flex-col">
         <div v-if="false" class="w-full">
             <fwb-dropdown>
@@ -103,7 +320,10 @@ const openRenderedPdf = (file) => {
 
                         <div class="col-span-4">
                             <div class="text-2xs">
-                                <p class="m-0 font-medium">
+                                <p
+                                    class="max-w-56 m-0 font-medium overflow-hidden text-nowrap whitespace-nowrap truncate text-ellipsis"
+                                    :title="itemData.label"
+                                >
                                     {{ itemData.label }}
                                 </p>
                                 <div class="flex gap-x-4">
@@ -171,17 +391,20 @@ const openRenderedPdf = (file) => {
                                             hidden: !showActions
                                         }"
                                     >
-                                        <!-- <div class="px-4 py-3 text-sm text-gray-900 dark:text-white">
-                                        <div>Bonnie Green</div>
-                                        <div class="font-medium truncate">name@flowbite.com</div>
-                                    </div> -->
+                                        <!--
+                                        <div class="px-4 py-3 text-sm text-gray-900 dark:text-white">
+                                            <div>Bonnie Green</div>
+                                            <div class="font-medium truncate">name@flowbite.com</div>
+                                        </div>
+                                        -->
                                         <ul
                                             class="relative py-1 text-sm text-gray-700 dark:text-gray-200"
                                         >
                                             <li>
-                                                <a
-                                                    href="#!"
-                                                    class="flex items-center justify-start gap-2 px-4 py-1 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                                <button
+                                                    type="button"
+                                                    @click="openShareModal"
+                                                    class="w-full flex items-center justify-start gap-2 px-4 py-1 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
                                                 >
                                                     <svg
                                                         class="w-4 h-4"
@@ -199,10 +422,8 @@ const openRenderedPdf = (file) => {
                                                             d="M7.217 10.907a2.25 2.25 0 1 0 0 2.186m0-2.186c.18.324.283.696.283 1.093s-.103.77-.283 1.093m0-2.186 9.566-5.314m-9.566 7.5 9.566 5.314m0 0a2.25 2.25 0 1 0 3.935 2.186 2.25 2.25 0 0 0-3.935-2.186Zm0-12.814a2.25 2.25 0 1 0 3.933-2.185 2.25 2.25 0 0 0-3.933 2.185Z"
                                                         ></path>
                                                     </svg>
-
                                                     Share
-                                                </a>
-                                            </li>
+                                                </button> </li>
                                             <li>
                                                 <a
                                                     href="#!"
@@ -275,7 +496,7 @@ const openRenderedPdf = (file) => {
                                                 v-on:click="
                                                     openRenderedPdf(itemData)
                                                 "
-                                                class="flex items-center justify-start gap-2 px-4 py-1 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                                class="w-full flex items-center justify-start gap-2 px-4 py-1 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
                                             >
                                                 <svg
                                                     class="w-4 h-4"

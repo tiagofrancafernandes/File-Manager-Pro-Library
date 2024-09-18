@@ -42,6 +42,11 @@ return [
     */
 
     'debug' => (bool) env('APP_DEBUG', false),
+
+    'dev' => [
+        'show_wip_features' => (bool) env('SHOW_WIP_FEATURES', false),
+    ],
+
     'force_https' => (bool) env('FORCE_HTTPS', false),
 
     /*

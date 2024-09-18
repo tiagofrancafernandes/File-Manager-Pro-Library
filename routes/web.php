@@ -42,12 +42,21 @@ Route::middleware([
     ->name('files.')
     ->group(function () {
         Route::get('/', [FileController::class, 'index'])->name('index');
-        Route::get('/temp', [FileController::class, 'tempIndex'])->name('temp_index');
         Route::get('/file/s/{storageItem}/{mode?}', [FileController::class, 'showSigned'])->name('showSigned')->middleware('signed');
         Route::get('/upload', [FileController::class, 'upload'])->name('upload');
         Route::post('/upload', [FileController::class, 'uploadFiles'])->name('upload_process');
+        Route::post('/favorite/{hashedid}', [FileController::class, 'toggleFavorite'])->name('toggle_favorite');
         Route::get('/render/{hashedid}', [FileController::class, 'renderPdfProtected'])
             ->name('render_pdf_protected');
+    });
+
+Route::middleware([
+    'auth', /* 'verified' */
+])
+    ->prefix('wip')
+    ->name('wip.')
+    ->group(function () {
+        Route::get('/files', [FileController::class, 'wipIndex'])->name('index');
     });
 
 require __DIR__ . '/auth.php';
