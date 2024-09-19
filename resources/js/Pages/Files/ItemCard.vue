@@ -91,7 +91,7 @@ let urlForProtectedRender = ref(null);
 const protectedRenderUrl = computed(() => {
     if (!urlForProtectedRender.value) {
         console.log('fetch to get urlForProtectedRender', itemData.value?.hashedid, itemData.value);
-        urlForProtectedRender.value = route('files.render_pdf_protected',
+        urlForProtectedRender.value = route('reader.render',
             { hashedid: itemData.value?.hashedid }
         );
         return urlForProtectedRender.value;

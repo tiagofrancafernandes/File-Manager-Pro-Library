@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use Illuminate\Foundation\Application;
 use App\Http\Controllers\FileController;
 use App\Http\Controllers\ProfileController;
+use Illuminate\Support\Facades\Storage;
 
 /*
 |--------------------------------------------------------------------------
@@ -47,8 +48,17 @@ Route::middleware([
         Route::post('/upload', [FileController::class, 'uploadFiles'])->name('upload_process');
         Route::post('/favorite/{hashedid}', [FileController::class, 'toggleFavorite'])->name('toggle_favorite');
         Route::get('/embedded/{embeddedId}', [FileController::class, 'embedded'])->name('embedded');
-        Route::get('/render/{hashedid}', [FileController::class, 'renderPdfProtected'])
-            ->name('render_pdf_protected');
+    });
+
+Route::middleware([
+    //
+])
+    ->prefix('reader')
+    ->name('reader.')
+    ->group(function () {
+        Route::get('/embedded/{embeddedId}', [FileController::class, 'embedded'])->name('embedded');
+        Route::get('/render/{hashedid}', [FileController::class, 'renderPdfProtected'])->name('render');
+        Route::get('/render/{hashedid}/bdata', [FileController::class, 'b64EncodedPdf'])->name('b64_encoded_pdf');
     });
 
 Route::middleware([
@@ -58,6 +68,29 @@ Route::middleware([
     ->name('wip.')
     ->group(function () {
         Route::get('/files', [FileController::class, 'wipIndex'])->name('index');
+
+        Route::get('/wip-base64-file', function () {
+            $filePath = Storage::disk('public')->path('uploads/brunno.pdf');
+
+            // return response()->file($filePath);
+
+            $pdfFile = $filePath;
+
+            if (!is_file($pdfFile)) {
+                http_response_code(404);
+
+                die('Not found!');
+            }
+
+            $b64Data = base64_encode(file_get_contents($pdfFile));
+
+            $salt = 't8ggh';
+            $salt = ''; // Ajuda a proteger o PDF contra decode indevido
+
+            die(implode('', [$salt, $b64Data, $salt]));
+        })->name('base64_file');
+
+        Route::get('/wip-base64-render', fn () => view('pdfjs.render-v1'))->name('base64_render');
     });
 
 require __DIR__ . '/auth.php';

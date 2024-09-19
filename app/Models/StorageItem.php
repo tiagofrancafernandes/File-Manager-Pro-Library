@@ -398,4 +398,9 @@ class StorageItem extends Model
             'extra_data' => $attr['extra_data'] ?? [],
         ];
     }
+
+    public function scopePdfOnly(Builder $query)
+    {
+        return $query->where('mime_type', 'application/pdf');
+    }
 }

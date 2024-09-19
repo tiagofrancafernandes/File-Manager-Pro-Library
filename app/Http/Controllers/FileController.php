@@ -162,20 +162,55 @@ class FileController extends Controller
         return redirect()->route('files.index')->with('success', __('Files uploaded successfully'));
     }
 
+    public function b64EncodedPdf(Request $request, string $hashedid)
+    {
+        abort_unless(filled($hashedid), 404);
+
+        if (in_array($hashedid, ['fake-hash-id']) && config('app.dev.show_wip_features')) {
+            $hashedid = StorageItem::whereNotNull('hashedid')->select(['hashedid'])?->first()?->hashedid;
+        }
+
+        $file = StorageItem::pdfOnly()->where('hashedid', $hashedid)->firstOrFail();
+
+        abort_unless($file?->storage()?->exists($file?->path), 404);
+
+        $filePath = $file?->storage()?->path($file?->path);
+
+        abort_unless($filePath || $file?->storage()?->exists($file?->path), 404, 'Not found!');
+
+        $b64Data = base64_encode(file_get_contents($filePath));
+
+        $salt = 't8ggh';
+        $salt = ''; // Ajuda a proteger o PDF contra decode indevido
+
+        die(implode('', [$salt, $b64Data, $salt]));
+    }
+
     public function renderPdfProtected(Request $request, string $hashedid)
     {
-        $file = StorageItem::where('hashedid', $hashedid)->where('mime_type', 'application/pdf')->firstOrFail();
+        abort_unless(filled($hashedid), 404);
 
-        $path = $file?->storage()?->path($file?->path);
+        if (in_array($hashedid, ['fake-hash-id']) && config('app.dev.show_wip_features')) {
+            $hashedid = StorageItem::whereNotNull('hashedid')->select(['hashedid'])?->first()?->hashedid;
+        }
 
-        if (!file_exists($path)) {
+        $file = StorageItem::pdfOnly()->where('hashedid', $hashedid)->firstOrFail();
+
+        abort_unless($file?->storage()?->exists($file?->path), 404);
+
+        $filePath = $file?->storage()?->path($file?->path);
+
+        abort_unless($filePath || $file?->storage()?->exists($file?->path), 404, 'Not found!');
+
+        if (!file_exists($filePath)) {
             abort(404);
         }
 
-        return 'conteudo';
-        // dd($path);
-
         // return response()->file($path);
+        return view('pdfjs.render', [
+            'hashedid' => $hashedid,
+            'file' => $file,
+        ]);
     }
 
     public function toggleFavorite(Request $request, string $hashedid)
@@ -201,7 +236,7 @@ class FileController extends Controller
 
         return Inertia::render('Files/Embedded', [
             'protectedIid' => $protectedIid,
-            'src' => route('files.render_pdf_protected', $protectedIid),
+            'src' => route('reader.render', $protectedIid),
             'title' => 'Pro Lib',
         ]);
     }
