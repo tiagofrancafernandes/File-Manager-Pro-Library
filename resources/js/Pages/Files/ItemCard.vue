@@ -24,7 +24,7 @@ const slots = useSlots();
 const attrs = useAttrs();
 
 let showActions = ref(false);
-let itemData = ref(props.item);
+let itemData = ref(props.item || {});
 
 let showShareModal = ref(false);
 
@@ -90,13 +90,30 @@ let urlForProtectedRender = ref(null);
 
 const protectedRenderUrl = computed(() => {
     if (!urlForProtectedRender.value) {
-        console.log('fetch to get urlForProtectedRender');
-        urlForProtectedRender.value = route('files.render_pdf_protected', itemData.value?.hashedid);
+        console.log('fetch to get urlForProtectedRender', itemData.value?.hashedid, itemData.value);
+        urlForProtectedRender.value = route('files.render_pdf_protected',
+            { hashedid: itemData.value?.hashedid }
+        );
         return urlForProtectedRender.value;
     }
 
     return urlForProtectedRender.value;
 });
+
+const openDownloadFileLink = () => {
+    console.log('openDownloadFileLink 1');
+    let file = itemData.value;
+    file = file && typeof file === 'object' ? file : null;
+
+    if (!file || Array.isArray(file) || file.typeName !== 'FILE') {
+        console.log('openDownloadFileLink 2', file);
+        return null;
+    }
+
+    console.log('openDownloadFileLink 3');
+
+    window.open(`${protectedRenderUrl.value}#dnl`, '_blank');
+}
 
 const openRenderedPdf = (file) => {
     file = file && typeof file === 'object' ? file : null;
@@ -105,18 +122,26 @@ const openRenderedPdf = (file) => {
         return null;
     }
 
-    router.visit(protectedRenderUrl.value, {
-        method: 'get',
-        data: {
-            hashedid: file?.hashedid,
-        }
-    });
+    window.open(protectedRenderUrl.value, '_blank');
+
+    // router.visit(protectedRenderUrl.value, {
+    //     method: 'get',
+    //     data: {
+    //         hashedid: file?.hashedid,
+    //     }
+    // });
 }
 
 let shareMode = ref('url');
 
 const embedContent = computed(() => {
-    return `<a href="${protectedRenderUrl.value}">See the file</a>`;
+    return [`<iframe`,
+        `width="100%" height="100%" style="width: 100%; height: 100vh;"`,
+        `src="${protectedRenderUrl.value}"`,
+        `title="Pro Library"`,
+        `referrerpolicy="no-referrer-when-cross-origin"`,
+        `frameborder="0" allowfullscreen`,
+    `></iframe>`].join(' ');
 })
 
 let shareContent = computed(() => {
@@ -471,7 +496,9 @@ const copyShareToClipboard = () => {
                                             </li>
                                             <li>
                                                 <a
-                                                    href="#!"
+                                                    href="#download"
+                                                    target="_blank"
+                                                    @click.prevent="openDownloadFileLink"
                                                     class="flex items-center justify-start gap-2 px-4 py-1 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
                                                 >
                                                     <svg

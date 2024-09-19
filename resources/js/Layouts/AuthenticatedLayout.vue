@@ -51,6 +51,13 @@ onMounted(() => {
                                     Temp Files
                                 </NavLink>
 
+                                <NavLink
+                                    v-if="$page?.props?.config?.app?.dev?.show_wip_features"
+                                    :href="route('files.embedded', 'fake-hash-id')" :active="route().current('files.embedded')"
+                                >
+                                    Fake embedded
+                                </NavLink>
+
                                 <NavLink :href="route('files.upload')" :active="route().current('files.upload')">
                                     Upload files
                                 </NavLink>
@@ -144,8 +151,19 @@ onMounted(() => {
                         <ResponsiveNavLink :href="route('files.index')" :active="route().current('files.index')">
                             Files
                         </ResponsiveNavLink>
-                        <ResponsiveNavLink :href="route('files.index')" :active="route().current('files.index')">
+                        <ResponsiveNavLink
+                            v-if="$page?.props?.config?.app?.dev?.show_wip_features"
+                            :href="route('wip.index')"
+                            :active="route().current('wip.index')"
+                        >
                             Temp Files
+                        </ResponsiveNavLink>
+                        <ResponsiveNavLink
+                            v-if="$page?.props?.config?.app?.dev?.show_wip_features"
+                            :href="route('files.embedded', 'fake-hash-id')"
+                            :active="route().current('files.embedded')"
+                        >
+                            Fake embedded
                         </ResponsiveNavLink>
 
                         <ResponsiveNavLink :href="route('files.upload')" :active="route().current('files.upload')">

@@ -46,6 +46,7 @@ Route::middleware([
         Route::get('/upload', [FileController::class, 'upload'])->name('upload');
         Route::post('/upload', [FileController::class, 'uploadFiles'])->name('upload_process');
         Route::post('/favorite/{hashedid}', [FileController::class, 'toggleFavorite'])->name('toggle_favorite');
+        Route::get('/embedded/{embeddedId}', [FileController::class, 'embedded'])->name('embedded');
         Route::get('/render/{hashedid}', [FileController::class, 'renderPdfProtected'])
             ->name('render_pdf_protected');
     });

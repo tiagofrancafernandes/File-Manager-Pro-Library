@@ -172,9 +172,10 @@ class FileController extends Controller
             abort(404);
         }
 
-        dd($path);
+        return 'conteudo';
+        // dd($path);
 
-        return response()->file($path);
+        // return response()->file($path);
     }
 
     public function toggleFavorite(Request $request, string $hashedid)
@@ -186,5 +187,22 @@ class FileController extends Controller
         ])->save();
 
         return response()->json($file);
+    }
+
+    public function embedded(Request $request, string $protectedIid)
+    {
+        abort_unless(filled($protectedIid), 404);
+
+        if (in_array($protectedIid, ['fake-hash-id']) && config('app.dev.show_wip_features')) {
+            $protectedIid = StorageItem::whereNotNull('hashedid')->select(['hashedid'])?->first()?->hashedid;
+        }
+
+        abort_unless(StorageItem::where('hashedid', $protectedIid)->exists(), 404);
+
+        return Inertia::render('Files/Embedded', [
+            'protectedIid' => $protectedIid,
+            'src' => route('files.render_pdf_protected', $protectedIid),
+            'title' => 'Pro Lib',
+        ]);
     }
 }
