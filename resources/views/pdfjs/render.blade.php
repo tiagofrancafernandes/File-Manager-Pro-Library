@@ -150,7 +150,7 @@ $encodedFileUrl = 'https://files.tiagofranca.com/reader/render/WVYmxkazYeJ0PoX/b
                 return;
             }
 
-            pdfjsLib.GlobalWorkerOptions.workerSrc = "{{ \Vite::asset('resources/js/doc-reader.js') }}";
+            pdfjsLib.GlobalWorkerOptions.workerSrc = "{{ \Vite::asset('resources/js/doc-reader/doc-reader.js') }}";
 
             {{-- const url = 'https://www.thecampusqdl.com/uploads/files/pdf_sample_2.pdf'; --}}
             const url = window?.EFURL;
