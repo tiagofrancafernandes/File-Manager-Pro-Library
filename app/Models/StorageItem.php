@@ -36,12 +36,18 @@ use Illuminate\Http\UploadedFile;
  * @property \Illuminate\Support\Carbon|null $created_at
  * @property \Illuminate\Support\Carbon|null $updated_at
  * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property-read mixed $file_temporary_url
  * @property-read mixed $file_url
+ * @property-read mixed $type_name
+ * @property-read mixed $updated_at_humans_label
+ * @property-read mixed $virtual_path
  * @property-read User $owner
+ * @method static \Illuminate\Database\Eloquent\Builder|StorageItem dirsOnly()
  * @method static \Database\Factories\StorageItemFactory factory($count = null, $state = [])
  * @method static \Illuminate\Database\Eloquent\Builder|StorageItem newModelQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|StorageItem newQuery()
  * @method static \Illuminate\Database\Eloquent\Builder|StorageItem onlyTrashed()
+ * @method static \Illuminate\Database\Eloquent\Builder|StorageItem pdfOnly()
  * @method static \Illuminate\Database\Eloquent\Builder|StorageItem query()
  * @method static \Illuminate\Database\Eloquent\Builder|StorageItem whereCreatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|StorageItem whereDeletedAt($value)

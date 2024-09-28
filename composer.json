@@ -12,6 +12,8 @@
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.2",
         "laravel/tinker": "^2.8",
+        "league/flysystem-aws-s3-v3": "^3.28",
+        "league/flysystem-path-prefixing": "^3.28",
         "tightenco/ziggy": "^2.0"
     },
     "require-dev": {
@@ -47,13 +49,19 @@
             "@php artisan ide-helper:generate"
         ],
         "ide-helper-map-hard": [
-            "@php artisan ide-helper:generate",
+            "@php artisan ide-helper:eloquent",
+            "@php artisan ide-helper:generate -W -H -M",
             "@php artisan ide-helper:models --write --reset"
+        ],
+        "ide-helper-map-quiet": [
+            "@php artisan ide-helper:eloquent -q",
+            "@php artisan ide-helper:generate -q",
+            "@php artisan ide-helper:models --nowrite --reset -q"
         ],
         "post-autoload-dump": [
             "Illuminate\\Foundation\\ComposerScripts::postAutoloadDump",
             "@php artisan package:discover --ansi",
-            "@ide-helper-map"
+            "@ide-helper-map-quiet"
         ],
         "post-update-cmd": [
             "@php artisan vendor:publish --tag=laravel-assets --ansi --force"
