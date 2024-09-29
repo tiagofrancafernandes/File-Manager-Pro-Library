@@ -138,13 +138,25 @@ $encodedFileUrl = 'https://files.tiagofranca.com/reader/render/WVYmxkazYeJ0PoX/b
     </style>
 </head>
 <body>
-    <canvas id="{{ $canvaRandomId }}" style="width: 100%; height: auto;"></canvas>
+    <div
+        id="{{ $canvaRandomId . '_' . rand(10, 50) }}"
+        style="width: 100%; height: 100vh;overflow: scroll;top: 0;position: absolute; margin: 0 auto;"
+    >
+        <canvas
+            id="{{ $canvaRandomId }}"
+            style="width: 100%; height: auto;overflow: auto;top: 0;position: relative;"
+        ></canvas>
+    </div>
     <div data-id="nav-container">
         <button type="button" data-id="prev">Prev</button>
         <button type="button" data-id="next">Next</button>
     </div>
     <script>
         async function render(pageNumber = null) {
+            if (window._rendering) {
+                return;
+            }
+
             document.querySelector('html')?.classList?.add('nodoc');
             if (!window.pdfjsLib) {
                 return;
@@ -166,6 +178,10 @@ $encodedFileUrl = 'https://files.tiagofranca.com/reader/render/WVYmxkazYeJ0PoX/b
                     data: pdfData,
                 })
                 .promise.then(async function(pdf) {
+                    if (window._rendering) {
+                        return;
+                    }
+
                     if (!window?.canvaBaseID) {
                         window?.debugLog(`Invalid "window.canvaBaseID" value`);
                         return;
@@ -184,20 +200,48 @@ $encodedFileUrl = 'https://files.tiagofranca.com/reader/render/WVYmxkazYeJ0PoX/b
                     window.pageNumber = pageNumber;
 
                     canvas.height = pdf.getPage(pageNumber)
-                    .then(function(page) {
-                        const viewport = page.getViewport({ scale: scale });
-                        canvas.height = viewport.height;
-                        canvas.width = viewport.width;
-                        const renderContext = {
-                            canvasContext: context,
-                            viewport: viewport
-                        };
-                        return page.render(renderContext);
-                    }).catch(error => window?.debugLog(error));
+                        .then(function(page) {
+                            console.log('window._rendering', window._rendering);
+                            if (window._rendering) {
+                                return;
+                            }
+
+                            const viewport = page.getViewport({ scale: scale });
+                            canvas.height = viewport.height;
+                            canvas.width = viewport.width;
+                            const renderContext = {
+                                canvasContext: context,
+                                viewport: viewport
+                            };
+
+                            const renderTask = page.render(renderContext);
+
+                            // Para cancelar a renderização anterior
+                            if (window._rendering) {
+                                renderTask.cancel();
+                            }
+
+                            window._rendering = true;
+
+                            return renderTask.promise.then((...args) => {
+                                    if (!args || args.length) {
+                                        return;
+                                    }
+
+                                    // Renderização concluída
+                                    window?.debugLog(args, 'log');
+                                }).catch((error) => {
+                                    // Lidar com erros
+                                    window?.debugLog(error, 'error');
+                                });
+                        })
+                            .catch(error => window?.debugLog(error, 'error'))
+                            .finally(() => {
+                                window._rendering = false;
+                            });
 
                     document.querySelector('html')?.classList?.remove('nodoc');
                 });
-            // Carregar o PDF
         };
 
         document.addEventListener('DOMContentLoaded', async () => {
@@ -222,6 +266,10 @@ $encodedFileUrl = 'https://files.tiagofranca.com/reader/render/WVYmxkazYeJ0PoX/b
                             return;
                         }
 
+                        if (window._rendering) {
+                            return;
+                        }
+
                         window.pageNumber = window.pageNumber || null;
                         window.pageNumber = numericOr(window.pageNumber, null) === null ? 1 : window.pageNumber;
 
@@ -239,8 +287,47 @@ $encodedFileUrl = 'https://files.tiagofranca.com/reader/render/WVYmxkazYeJ0PoX/b
                 });
         });
 
+        document.addEventListener('page:goto', async function(event){
+            event.preventDefault();
+
+            if (window._rendering) {
+                return;
+            }
+
+            let page = `${event?.detail}`.toLowerCase();
+
+            if (!['next', 'prev'].includes(page) && isNaN(Number(page))) {
+                return;
+            }
+
+            page = ['next', 'prev'].includes(page) ? page : Number(page);
+
+            window.pageNumber = window.pageNumber || null;
+            window.pageNumber = numericOr(window.pageNumber, null) === null ? 1 : window.pageNumber;
+
+            let toCalc = 0;
+            let newNumber;
+
+            if (['next', 'prev'].includes(page)) {
+                toCalc = page === 'next' ? 1 : -1;
+                newNumber = numericOr(window.pageNumber, 1) + toCalc;
+            }
+
+            if (!['next', 'prev'].includes(page)) {
+                newNumber = numericOr(page);
+            }
+
+            newNumber = newNumber <= 0 ? 1 : newNumber;
+
+            if (window.pageNumber === newNumber) {
+                return;
+            }
+
+            await render(newNumber);
+        }, false);
+
         // Desativar o menu de contexto
-        document.addEventListener("contextmenu", function(event){
+        document.addEventListener('contextmenu', function(event){
             event.preventDefault();
         }, false);
 
@@ -266,5 +353,7 @@ $encodedFileUrl = 'https://files.tiagofranca.com/reader/render/WVYmxkazYeJ0PoX/b
             event.preventDefault();
         }, false);
     </script>
+
+    @vite('resources/js/doc-reader/mouse-and-keyboard.js')
 </body>
 </html>
