@@ -48,6 +48,7 @@ Route::middleware([
         Route::post('/upload', [FileController::class, 'uploadFiles'])->name('upload_process');
         Route::post('/favorite/{hashedid}', [FileController::class, 'toggleFavorite'])->name('toggle_favorite');
         Route::get('/embedded/{embeddedId}', [FileController::class, 'embedded'])->name('embedded');
+        Route::get('/{hashedid}/download', [FileController::class, 'download'])->name('download');
     });
 
 Route::middleware([

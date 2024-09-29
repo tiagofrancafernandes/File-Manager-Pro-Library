@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Inertia\Inertia;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Auth;
 
 // use App\Enums\StorageItemTypeEnum;
 // use Illuminate\Support\Facades\Storage;
@@ -239,5 +240,23 @@ class FileController extends Controller
             'src' => route('reader.render', $protectedIid),
             'title' => 'Pro Lib',
         ]);
+    }
+
+    public function download(Request $request, string $hashedid)
+    {
+        abort_unless(filled($hashedid), 404);
+
+        $file = StorageItem::query()
+            // ->pdfOnly()
+            ->where('user_id', Auth::user()?->id)
+            ->where('hashedid', $hashedid)->firstOrFail();
+
+        abort_unless($file?->storage()?->exists($file?->path), 404);
+
+        $filePath = $file?->storage()?->path($file?->path);
+
+        abort_unless($filePath || $file?->storage()?->exists($file?->path), 404, 'Not found!');
+
+        return response()->file($filePath);
     }
 }
