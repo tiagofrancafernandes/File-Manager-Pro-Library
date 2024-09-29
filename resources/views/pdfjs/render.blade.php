@@ -5,7 +5,6 @@ $canvaRandomId = 'uni_' . uniqid();
 $readerUrl = route('reader.render', $hashedid);
 // $encodedFileUrl = route('wip.base64_file');
 $encodedFileUrl = route('reader.b64_encoded_pdf', $hashedid);
-$encodedFileUrl = 'https://files.tiagofranca.com/reader/render/WVYmxkazYeJ0PoX/bdata';
 @endphp
 <!DOCTYPE html>
 <html lang="en"  class="nodoc">
