@@ -354,6 +354,6 @@ $encodedFileUrl = 'https://files.tiagofranca.com/reader/render/WVYmxkazYeJ0PoX/b
         }, false);
     </script>
 
-    @vite('resources/js/doc-reader/mouse-and-keyboard.js')
+    {{-- @vite('resources/js/doc-reader/mouse-and-keyboard.js') --}}
 </body>
 </html>
