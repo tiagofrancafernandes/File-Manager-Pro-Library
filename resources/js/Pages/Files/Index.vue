@@ -233,7 +233,7 @@ size_humans_label
 
                 <div class="py-4 px-2 md:px-5">
                     <div
-                        class="mb-6 grid grid-cols-4 !gap-5 max-md:grid-cols-1 absolute"
+                        class="mb-6 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 !gap-5 max-md:grid-cols-1 absolute"
                     >
                         <template
                             v-for="(item, itemIndex) in notDirsOnly"

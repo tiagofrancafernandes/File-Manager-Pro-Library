@@ -6,6 +6,7 @@ import { mapItem } from '@/Pages/Files/helpers';
 import PdfFile from '@/Pages/Files/TypeIcons/PdfFile.vue';
 import Directory from '@/Pages/Files/TypeIcons/Directory.vue';
 import Modal from '@/Components/Modal.vue';
+import DeleteFileForm from '@/Pages/Files/partials/DeleteFileForm.vue';
 
 const props = defineProps({
     item: {
@@ -503,25 +504,31 @@ const copyShareToClipboard = () => {
                                                 </button>
                                             </li>
                                             <li>
-                                                <a
-                                                    href="#!"
-                                                    class="flex items-center justify-start gap-2 px-4 py-1 text-sm text-gray-700 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-gray-200 dark:hover:text-white"
+                                                <DeleteFileForm
+                                                    :file="itemData"
                                                 >
-                                                    <svg
-                                                        class="w-4 h-4"
-                                                        xmlns="http://www.w3.org/2000/svg"
-                                                        viewBox="0 0 16 16"
-                                                        fill="currentColor"
-                                                    >
-                                                        <path
-                                                            fill-rule="evenodd"
-                                                            clip-rule="evenodd"
-                                                            d="M10 3h3v1h-1v9l-1 1H4l-1-1V4H2V3h3V2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1zM9 2H6v1h3V2zM4 13h7V4H4v9zm2-8H5v7h1V5zm1 0h1v7H7V5zm2 0h1v7H9V5z"
-                                                        ></path>
-                                                    </svg>
+                                                    <template v-slot:trigger>
+                                                        <button
+                                                            type="button"
+                                                            class="flex w-full items-center justify-start gap-2 px-4 py-1 text-sm text-red-700 hover:bg-red-100 dark:hover:bg-red-600 dark:text-red-500 dark:hover:text-white"
+                                                        >
+                                                            <svg
+                                                                class="w-4 h-4"
+                                                                xmlns="http://www.w3.org/2000/svg"
+                                                                viewBox="0 0 16 16"
+                                                                fill="currentColor"
+                                                            >
+                                                                <path
+                                                                    fill-rule="evenodd"
+                                                                    clip-rule="evenodd"
+                                                                    d="M10 3h3v1h-1v9l-1 1H4l-1-1V4H2V3h3V2a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v1zM9 2H6v1h3V2zM4 13h7V4H4v9zm2-8H5v7h1V5zm1 0h1v7H7V5zm2 0h1v7H9V5z"
+                                                                ></path>
+                                                            </svg>
+                                                            Delete
+                                                        </button>
 
-                                                    Delete
-                                                </a>
+                                                    </template>
+                                                </DeleteFileForm>
                                             </li>
                                             <li>
                                                 <a

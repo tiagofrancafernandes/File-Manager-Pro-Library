@@ -259,4 +259,32 @@ class FileController extends Controller
 
         return response()->file($filePath);
     }
+
+    public function destroy(Request $request, string $hashedid)
+    {
+        $request->validate([
+            'password' => ['required', 'current_password'],
+        ]);
+
+        $user = $request->user();
+
+        abort_unless(filled($hashedid), 404);
+
+        $file = StorageItem::query()
+            // ->pdfOnly()
+            ->where('user_id', Auth::user()?->id)
+            ->where('hashedid', $hashedid)->firstOrFail();
+
+        if ($file?->storage()?->exists($file?->path)) {
+            $file?->storage()?->delete($file?->path);
+        }
+
+        $deleted = $file?->delete();
+
+        if (!$deleted) {
+            return back()->with('error', 'Fail on delete file');
+        }
+
+        return back()->with('success', 'File deleted successfuly');
+    }
 }
