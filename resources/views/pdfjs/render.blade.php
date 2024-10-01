@@ -1,6 +1,10 @@
 @php
 // https://github.com/mozilla/pdf.js/blob/master/examples/learning/helloworld64.html#L42
-$bgImage = asset('images/teacher.png');
+// $bgImage = asset('images/teacher.webp');
+$bgImage = asset('images/teacher2.webp');
+$bgPortrait = asset('images/teacher-portrait.webp');
+$bgWide = asset('images/teacher-wide.webp');
+// $bgImage = 'https://teacherdosfamosos.com.br/wp-content/uploads/2024/07/fundo.webp';
 $canvaRandomId = 'uni_' . uniqid();
 $readerUrl = route('reader.render', $hashedid);
 // $encodedFileUrl = route('wip.base64_file');
@@ -48,9 +52,34 @@ $encodedFileUrl = route('reader.b64_encoded_pdf', $hashedid);
         }
 
         .nodoc body {
-            background-image: url('{{ $bgImage }}');
-            background-size: cover;
+            background-image: url('{{ $bgPortrait }}');
+            /* background-size: cover; */
+            background-size: contain;
             opacity: 0; /* Ajuste a opacidade aqui */
+        }
+
+        [data-id="nav-container"] {
+            top: 35%;
+        }
+
+        [data-id="nav-container"] button {
+            height: 7rem;
+        }
+
+        @media (min-width: 1280px) {
+            .nodoc body {
+                background-image: url('{{ $bgWide }}');
+                background-size: cover;
+                /* background-size: contain; */
+            }
+
+            [data-id="nav-container"] {
+                top: unset;
+            }
+
+            [data-id="nav-container"] button {
+                height: 3rem;
+            }
         }
 
         .nodoc body {
@@ -147,9 +176,26 @@ $encodedFileUrl = route('reader.b64_encoded_pdf', $hashedid);
         ></canvas>
     </div>
     <div data-id="nav-container">
-        <button type="button" data-id="prev">Prev</button>
-        <button type="button" data-id="next">Next</button>
+        <div>
+            <div style="margin-top: 1rem;">
+                <button type="button" data-id="prev">Prev</button>
+            </div>
+
+            <div style="margin-top: 1rem;">
+                <button type="button" data-id="full">Full screen</button>
+            </div>
+
+            <div style="margin-top: 1rem;display: flex;gap: 0.7rem;">
+                <button type="button" data-id="zoom" data-value="+" style="width: 100%;">+</button>
+                <button type="button" data-id="zoom" data-value="-" style="width: 100%;">-</button>
+            </div>
+        </div>
+
+        <div>
+            <button type="button" data-id="next">Next</button>
+        </div>
     </div>
+
     <script>
         async function render(pageNumber = null) {
             if (window._rendering) {

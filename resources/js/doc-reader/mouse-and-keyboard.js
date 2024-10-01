@@ -1,9 +1,74 @@
 import { debugIsOn, debugLog } from '@/doc-reader/helpers';
 
-const init = (elSelector) => {
+globalThis.fullScreenToggle = function () {
+    if (!document.fullscreenElement) {
+        // Se não estiver em tela cheia, ativa
+        document.documentElement.requestFullscreen().catch(err => {
+            console.error(`Erro ao tentar ativar tela cheia: ${err.message}`);
+        });
+
+        return
+    }
+
+    // Se já estiver em tela cheia, sai
+    document.exitFullscreen().catch(err => {
+        console.error(`Erro ao tentar sair da tela cheia: ${err.message}`);
+    });
+};
+
+const zoomActorsInit = () => {
+    document.querySelectorAll('button[data-id="zoom"][data-value]')?.forEach(
+        button => {
+            button.addEventListener('click', (event) => {
+                let data = event?.target?.dataset || {};
+                let actionCode = data?.value || null;
+
+                if (!actionCode || typeof actionCode !== 'string') {
+                    return;
+                }
+
+                document.querySelector('body')?.dispatchEvent(
+                    new CustomEvent('keydown', {
+                        detail: { code: actionCode }
+                    })
+                );
+            });
+        }
+    );
+};
+
+const fullScreenActorsInit = () => {
+    let canvasEl = document.querySelector('body canvas');
+
+    canvasEl?.addEventListener('dblclick', (event) => {
+        if (!globalThis?.fullScreenToggle) {
+            return;
+        }
+
+        globalThis?.fullScreenToggle();
+    });
+
+    let fullScreenButton = document.querySelector('button[data-id="full"]');
+    if (!fullScreenButton) {
+        return;
+    }
+
+    fullScreenButton.addEventListener('click', (event) => {
+        if (!globalThis?.fullScreenToggle) {
+            return;
+        }
+
+        globalThis?.fullScreenToggle();
+    });
+};
+
+const init = elSelector => {
     // container = document.querySelector('body canvas');
     // container = document.querySelector('body div');
     // container.scrollTop = 100;
+
+    fullScreenActorsInit();
+    zoomActorsInit();
 
     let container = document.querySelector(elSelector);
 
@@ -20,7 +85,7 @@ const init = (elSelector) => {
     if (debugIsOn()) {
         globalThis._mt_ob = {
             canvaElement,
-            container,
+            container
         };
     }
 
@@ -66,7 +131,7 @@ const init = (elSelector) => {
         return deltaY > 0 ? 'DOWN' : 'UP';
     };
 
-    const getSpeed = (moveEvent) => {
+    const getSpeed = moveEvent => {
         const currentX = moveEvent.pageX;
         const currentY = moveEvent.pageY;
         const currentTime = Date.now();
@@ -79,7 +144,9 @@ const init = (elSelector) => {
         const timeElapsed = currentTime - lastTime;
 
         // Calcula a velocidade
-        const speed = Math.sqrt(distanceX * distanceX + distanceY * distanceY) / timeElapsed;
+        const speed =
+            Math.sqrt(distanceX * distanceX + distanceY * distanceY) /
+            timeElapsed;
 
         // Atualiza as últimas posições e tempo
         lastX = currentX;
@@ -87,7 +154,8 @@ const init = (elSelector) => {
         lastTime = currentTime;
 
         // Define um limite para classificar a velocidade
-        if (speed > 0.5) { // Ajuste esse valor conforme necessário
+        if (speed > 0.5) {
+            // Ajuste esse valor conforme necessário
             debugLog('Arraste rápido');
 
             return 'FAST';
@@ -95,13 +163,16 @@ const init = (elSelector) => {
 
         debugLog('Arraste devagar');
         return 'SLOW';
-    }
+    };
 
-    const scrollDoc = (newPosition) => {
+    const scrollDoc = newPosition => {
         newPosition = newPosition <= 0 ? 0 : newPosition;
-        newPosition = newPosition >= canvaElement?.offsetHeight ? canvaElement?.offsetHeight : newPosition;
+        newPosition =
+            newPosition >= canvaElement?.offsetHeight
+                ? canvaElement?.offsetHeight
+                : newPosition;
         container.scrollTop = newPosition <= 0 ? 0 : newPosition;
-    }
+    };
 
     container.addEventListener('mousemove', e => {
         if (!isDown) {
@@ -135,7 +206,7 @@ const init = (elSelector) => {
         }
 
         // let toCalc = y;
-        let toCalc = speed === 'FAST' ? 20 : 5.500;
+        let toCalc = speed === 'FAST' ? 20 : 5.5;
         let naturalScroll = false; // Depois permitir seleçãopelo usuário
 
         let newValue =
@@ -147,7 +218,7 @@ const init = (elSelector) => {
     });
 
     document.querySelector('body')?.addEventListener('keydown', event => {
-        let actionCode = event.key || event.code;
+        let actionCode = event.key || event.code || event?.detail?.code;
 
         if (!actionCode) {
             return;
@@ -158,26 +229,45 @@ const init = (elSelector) => {
 
             if (actionCode === 'ArrowUp') {
                 scrollDoc(container?.scrollTop - toCalc);
-                return
+                return;
             }
 
             scrollDoc(container?.scrollTop + toCalc);
-            return
+            return;
         }
 
         if (['ArrowRight', 'ArrowLeft'].includes(actionCode)) {
             // let toCalc = event?.shiftKey ? 5 : 15;
 
             if (actionCode === 'ArrowRight') {
-                document.dispatchEvent(new CustomEvent('page:goto', {detail: 'next'}))
-                return
+                document.dispatchEvent(
+                    new CustomEvent('page:goto', { detail: 'next' })
+                );
+                return;
             }
 
-            document.dispatchEvent(new CustomEvent('page:goto', {detail: 'prev'}))
-            return
+            document.dispatchEvent(
+                new CustomEvent('page:goto', { detail: 'prev' })
+            );
+            return;
         }
 
-        if (['+', '-', '0', '1', '2', '3', '4', '5', '6', '7', '8', '9'].includes(actionCode)) {
+        if (
+            [
+                '+',
+                '-',
+                '0',
+                '1',
+                '2',
+                '3',
+                '4',
+                '5',
+                '6',
+                '7',
+                '8',
+                '9'
+            ].includes(actionCode)
+        ) {
             debugLog(`WIDTH ACTION actionCode ${actionCode}`);
 
             let newWidth = Number(actionCode === '0' ? 100 : `${actionCode}0`);
@@ -186,12 +276,15 @@ const init = (elSelector) => {
             currentWidth = Number(currentWidth.replace(/\D/g, ''));
 
             if (['-', '+'].includes(actionCode)) {
-                newWidth = actionCode === '+' ? currentWidth + 10 : currentWidth - 10;
+                newWidth =
+                    actionCode === '+' ? currentWidth + 10 : currentWidth - 10;
             }
 
             newWidth = newWidth <= 10 ? 10 : newWidth;
 
-            newWidth = (new RegExp('^((100)|([1-9])0)$')).test(`${newWidth}`) ? Number(newWidth) : 100;
+            newWidth = new RegExp('^((100)|([1-9])0)$').test(`${newWidth}`)
+                ? Number(newWidth)
+                : 100;
 
             newWidth = isNaN(newWidth) ? 100 : newWidth;
 
@@ -200,9 +293,9 @@ const init = (elSelector) => {
         }
 
         debugLog(`actionCode ${actionCode}`, event);
-    })
+    });
 };
 
-document.addEventListener('DOMContentLoaded', (event) => {
+document.addEventListener('DOMContentLoaded', event => {
     init('body div');
 });
