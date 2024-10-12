@@ -49,6 +49,18 @@ return [
 
     'force_https' => (bool) env('FORCE_HTTPS', false),
 
+    /**
+     * \App\Http\Controllers\FileController::b64EncodedPdf
+     */
+    /**
+     * \App\Http\Controllers\FileController::b64EncodedPdf
+     */
+    'cache_binary_render_content' => (bool) filter_var(
+        env('CACHE_BINARY_RENDER_CONTENT', false),
+        FILTER_VALIDATE_BOOL,
+        FILTER_NULL_ON_FAILURE
+    ),
+
     /*
     |--------------------------------------------------------------------------
     | Application URL

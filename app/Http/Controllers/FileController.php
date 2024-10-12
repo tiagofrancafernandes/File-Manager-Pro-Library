@@ -163,7 +163,7 @@ class FileController extends Controller
         return redirect()->route('files.index')->with('success', __('Files uploaded successfully'));
     }
 
-    public function b64EncodedPdf(Request $request, string $hashedid)
+    public function b64EncodedPdf(Request $request, string $hashedid)//: string
     {
         abort_unless(filled($hashedid), 404);
 
@@ -171,20 +171,35 @@ class FileController extends Controller
             $hashedid = StorageItem::whereNotNull('hashedid')->select(['hashedid'])?->first()?->hashedid;
         }
 
-        $file = StorageItem::pdfOnly()->where('hashedid', $hashedid)->firstOrFail();
+        $cacheBinaryData = config('app.cache_binary_render_content');
+        $cacheKey = __METHOD__ . "::{$hashedid}";
 
-        abort_unless($file?->storage()?->exists($file?->path), 404);
+        if ($cacheBinaryData && !cache()->has($cacheKey)) {
+            $file = StorageItem::pdfOnly()->where('hashedid', $hashedid)->firstOrFail();
 
-        $filePath = $file?->storage()?->path($file?->path);
+            abort_unless($file?->storage()?->exists($file?->path), 404);
 
-        abort_unless($filePath || $file?->storage()?->exists($file?->path), 404, 'Not found!');
+            $filePath = $file?->storage()?->path($file?->path);
 
-        $b64Data = base64_encode(file_get_contents($filePath));
+            abort_unless($filePath || $file?->storage()?->exists($file?->path), 404, 'Not found!');
+        }
 
-        $salt = 't8ggh';
-        $salt = ''; // Ajuda a proteger o PDF contra decode indevido
+        $b64Data = $cacheBinaryData ? cache()->remember(
+            $cacheKey,
+            60 * 60 * 24,
+            fn () => base64_encode(file_get_contents($filePath))
+        ) : base64_encode(file_get_contents($filePath));
 
-        die(implode('', [$salt, $b64Data, $salt]));
+        $salt = 't8ggh';// Ajuda a proteger o PDF contra decode indevido
+        $salt = '';
+
+        return response(
+            implode('', [$salt, $b64Data, $salt]),
+            200,
+            [
+                'Cache-Control' => 'max-age=3600, public',
+            ],
+        );
     }
 
     public function renderPdfProtected(Request $request, string $hashedid)

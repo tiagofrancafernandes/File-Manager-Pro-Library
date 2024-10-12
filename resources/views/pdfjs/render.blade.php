@@ -19,6 +19,7 @@ $encodedFileUrl = route('reader.b64_encoded_pdf', $hashedid);
     {{-- <!-- <script src="https://cdn.jsdelivr.net/npm/pdfjs-dist@2.7.570/build/pdf.min.js"></script> --> --}}
     {{-- <!-- <script src="./node_modules/pdfjs-dist/build/pdf.mjs" type="module"></script> --> --}}
     {{-- <script src="./node_modules/pdfjs-dist/build/pdf.mjs" type="module"></script> --}}
+    <script src="https://cdn.tailwindcss.com"></script>
 
     @vite([
         'resources/js/doc-reader/doc-reader.js',
@@ -30,6 +31,33 @@ $encodedFileUrl = route('reader.b64_encoded_pdf', $hashedid);
         window.canvaBaseID = '{{ $canvaRandomId }}';
         window.EFURL = '{{ $encodedFileUrl }}';
     </script>
+
+    <style>
+        /* estilos em teste desde 2024-10-12 */
+        /* width */
+        ::-webkit-scrollbar {
+            /* width: 15px; */
+            width: 0.9rem;
+        }
+
+        /* Track */
+        ::-webkit-scrollbar-track {
+            box-shadow: inset 0 0 5px grey;
+            border-radius: 10px;
+        }
+
+        /* Handle */
+        ::-webkit-scrollbar-thumb {
+            background: #7a4603;
+            border-radius: 10px;
+        }
+
+        /* Handle on hover */
+        ::-webkit-scrollbar-thumb:hover {
+            background: #fb8e00;
+        }
+        /* FIM dos estilos em teste desde 2024-10-12 */
+    </style>
 
     <style>
         *, body {
@@ -79,6 +107,10 @@ $encodedFileUrl = route('reader.b64_encoded_pdf', $hashedid);
 
             [data-id="nav-container"] button {
                 height: 3rem;
+            }
+
+            ::-webkit-scrollbar {
+                width: 1.1rem;
             }
         }
 
@@ -176,23 +208,25 @@ $encodedFileUrl = route('reader.b64_encoded_pdf', $hashedid);
         ></canvas>
     </div>
     <div data-id="nav-container">
-        <div>
+        <div class="group">
             <div style="margin-top: 1rem;">
-                <button type="button" data-id="prev">Prev</button>
+                <button type="button" class="bg-gray-500/20 group-hover:bg-gray-500/50 hover:bg-yellow-600/90 md:hover:scale-105" data-id="prev">Prev</button>
             </div>
 
             <div style="margin-top: 1rem;">
-                <button type="button" data-id="full">Full screen</button>
+                <button type="button" class="bg-gray-500/20 group-hover:bg-gray-500/50 hover:bg-yellow-600/90 md:hover:scale-105" data-id="full">Full screen</button>
             </div>
 
             <div style="margin-top: 1rem;display: flex;gap: 0.7rem;">
-                <button type="button" data-id="zoom" data-value="+" style="width: 100%;">+</button>
-                <button type="button" data-id="zoom" data-value="-" style="width: 100%;">-</button>
+                <button type="button" class="bg-gray-500/20 group-hover:bg-gray-500/50 hover:bg-yellow-600/90 md:hover:scale-105" data-id="zoom" data-value="+" style="width: 100%;">+</button>
+                <button type="button" class="bg-gray-500/20 group-hover:bg-gray-500/50 hover:bg-yellow-600/90 md:hover:scale-105" data-id="zoom" data-value="-" style="width: 100%;">-</button>
             </div>
         </div>
 
-        <div>
-            <button type="button" data-id="next">Next</button>
+        <div class="group">
+            <div style="margin-top: 1rem;">
+                <button type="button" class="bg-gray-500/20 group-hover:bg-gray-500/50 hover:bg-yellow-600/90 md:hover:scale-105" data-id="next">Next</button>
+            </div>
         </div>
     </div>
 
