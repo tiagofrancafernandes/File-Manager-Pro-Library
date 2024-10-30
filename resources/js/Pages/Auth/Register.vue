@@ -37,13 +37,27 @@ function validateRegexUsername() {
     const usernamePattern = /^[a-zA-Z0-9]{3,20}$/; // Aceita letras e números, entre 3 e 20 caracteres
     form.username = form?.username || '';
     form.username = typeof form.username === 'string' ? form.username : '';
+    form.errors.username = typeof form.errors.username === 'string' ? form.errors.username : '';
+
+    let notMatchError = 'The username must be between 3 and 20 characters and contain only letters and numbers.';
 
     if (!form.username.match(usernamePattern)) {
-        form.errors.username = 'The username must be between 3 and 20 characters and contain only letters and numbers.';
-        return
+        form.errors.username = form.errors.username.includes(notMatchError) ? form.errors.username : [
+            form.errors.username,
+            notMatchError,
+        ].filter(i => i).join('|');
+
+        return;
     }
 
-    form.errors.username = ''; // Limpa a mensagem de erro se a validação passar
+    if (form.errors.username.includes(notMatchError)) {
+        form.errors.username = form.errors.username
+            .replace(notMatchError + '|', '')
+            .replace('|' + notMatchError, '')
+            .replace(notMatchError, '');
+    }
+
+    // form.errors.username = '';
 }
 
 function validateUsernameValue() {
@@ -66,6 +80,8 @@ const allowToSubmit = computed(() => {
     ) {
         return false;
     }
+
+    console.log('form.errors?.username', form.errors?.username);
 
     if (form.errors?.username) {
         return false;
