@@ -5,12 +5,14 @@ import InputLabel from '@/Components/InputLabel.vue';
 import PrimaryButton from '@/Components/PrimaryButton.vue';
 import TextInput from '@/Components/TextInput.vue';
 import { Head, Link, useForm } from '@inertiajs/vue3';
+import { computed } from "vue";
 
 const form = useForm({
     name: '',
     email: '',
     password: '',
     password_confirmation: '',
+    username: '',
 });
 
 const submit = () => {
@@ -18,6 +20,63 @@ const submit = () => {
         onFinish: () => form.reset('password', 'password_confirmation'),
     });
 };
+
+function generateSlug(text) {
+    text = typeof text === 'string' ? text : '';
+
+    return text
+        .toLowerCase() // Converte para minúsculas
+        .trim() // Remove espaços em branco
+        .replace(/[\s]+/g, '-') // Substitui espaços por hífens
+        .replace(/[^\w\-]+/g, '') // Remove caracteres especiais
+        .replace(/\-\-+/g, '-') // Remove hífens duplicados
+        .replace(/^-+|-+$/g, ''); // Remove hífens do início e do fim
+}
+
+function validateRegexUsername() {
+    const usernamePattern = /^[a-zA-Z0-9]{3,20}$/; // Aceita letras e números, entre 3 e 20 caracteres
+    form.username = form?.username || '';
+    form.username = typeof form.username === 'string' ? form.username : '';
+
+    if (!form.username.match(usernamePattern)) {
+        form.errors.username = 'The username must be between 3 and 20 characters and contain only letters and numbers.';
+        return
+    }
+
+    form.errors.username = ''; // Limpa a mensagem de erro se a validação passar
+}
+
+function validateUsernameValue() {
+    form.username = form?.username || '';
+
+    form.username = generateSlug(form?.username);
+    validateRegexUsername();
+}
+
+const allowToSubmit = computed(() => {
+    validateUsernameValue();
+
+    if (
+        !form?.name ||
+        !form?.email ||
+        !form?.username ||
+        !form?.password ||
+        !form?.password_confirmation ||
+        (form?.password !== form?.password_confirmation)
+    ) {
+        return false;
+    }
+
+    if (form.errors?.username) {
+        return false;
+    }
+
+    if (!form.username) {
+        return false;
+    }
+
+    return true;
+});
 </script>
 
 <template>
@@ -54,6 +113,23 @@ const submit = () => {
                 />
 
                 <InputError class="mt-2" :message="form.errors.email" />
+            </div>
+
+            <div class="mt-4">
+                <InputLabel for="username" value="Username" />
+
+                <TextInput
+                    id="username"
+                    type="text"
+                    class="mt-1 block w-full"
+                    v-model="form.username"
+                    required
+                    @keydown="validateUsernameValue"
+                    @keyup="validateUsernameValue"
+                    autocomplete="username"
+                />
+
+                <InputError class="mt-2" :message="form.errors.username" />
             </div>
 
             <div class="mt-4">
@@ -94,7 +170,11 @@ const submit = () => {
                     Already registered?
                 </Link>
 
-                <PrimaryButton class="ms-4" :class="{ 'opacity-25': form.processing }" :disabled="form.processing">
+                <PrimaryButton
+                    class="ms-4"
+                    :class="{ 'opacity-25': form.processing || !allowToSubmit, 'cursor-not-allowed': !allowToSubmit }"
+                    :disabled="form.processing || !allowToSubmit"
+                >
                     Register
                 </PrimaryButton>
             </div>
