@@ -19,6 +19,12 @@ use Illuminate\Support\Facades\Storage;
 */
 
 Route::get('/', function () {
+    $toDashboard = true;
+
+    if ($toDashboard) {
+        return redirect()->route('dashboard');
+    }
+
     return Inertia::render('Welcome2', [
         'canLogin' => Route::has('login'),
         'canRegister' => Route::has('register'),
