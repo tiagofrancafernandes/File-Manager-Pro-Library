@@ -43,6 +43,8 @@ return [
 
     'debug' => (bool) env('APP_DEBUG', false),
 
+    'editor' => env('APP_EDITOR', 'vscode'), // Illuminate\Foundation\Concerns::$editorHrefs
+
     'dev' => [
         'show_wip_features' => (bool) env('SHOW_WIP_FEATURES', false),
     ],
@@ -73,6 +75,8 @@ return [
     */
 
     'url' => env('APP_URL', 'http://localhost'),
+
+    'frontend_url' => env('FRONTEND_URL', 'http://localhost:3000'),
 
     'asset_url' => env('ASSET_URL'),
 

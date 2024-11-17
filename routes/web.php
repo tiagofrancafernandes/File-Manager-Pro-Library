@@ -19,10 +19,10 @@ use Illuminate\Support\Facades\Storage;
 */
 
 Route::get('/', function () {
-    $toDashboard = true;
+    $redirectTo = route('files.index');
 
-    if ($toDashboard) {
-        return redirect()->route('dashboard');
+    if ($redirectTo) {
+        return redirect($redirectTo);
     }
 
     return Inertia::render('Welcome2', [

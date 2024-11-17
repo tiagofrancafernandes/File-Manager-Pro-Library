@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Models\StorageItem;
 use App\Observers\StorageItemObserver;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\Vite;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -24,6 +25,8 @@ class AppServiceProvider extends ServiceProvider
         if (config('app.force_https', false) || !app()->environment('local', 'testing')) {
             \Illuminate\Support\Facades\URL::forceScheme('https');
         }
+
+        Vite::prefetch(concurrency: 3);
 
         $this->observers();
     }

@@ -4,7 +4,6 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\LoginRequest;
-use App\Providers\RouteServiceProvider;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -34,7 +33,14 @@ class AuthenticatedSessionController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(RouteServiceProvider::HOME);
+        $intended = filter_var(session()->pull('url.intended'), FILTER_VALIDATE_URL, FILTER_NULL_ON_FAILURE);
+
+        if ($intended && config('app.force_https') && parse_url($intended, PHP_URL_SCHEME) !== 'https') {
+            $intended = str_replace('http://', 'https://', $intended);
+            session()->put('url.intended', $intended);
+        }
+
+        return redirect()->intended(route('dashboard'));
     }
 
     /**
