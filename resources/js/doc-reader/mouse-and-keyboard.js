@@ -7,7 +7,7 @@ globalThis.fullScreenToggle = function () {
             console.error(`Erro ao tentar ativar tela cheia: ${err.message}`);
         });
 
-        return
+        return;
     }
 
     // Se já estiver em tela cheia, sai
@@ -17,9 +17,10 @@ globalThis.fullScreenToggle = function () {
 };
 
 const zoomActorsInit = () => {
-    document.querySelectorAll('button[data-id="zoom"][data-value]')?.forEach(
-        button => {
-            button.addEventListener('click', (event) => {
+    document
+        .querySelectorAll('button[data-id="zoom"][data-value]')
+        ?.forEach(button => {
+            button.addEventListener('click', event => {
                 let data = event?.target?.dataset || {};
                 let actionCode = data?.value || null;
 
@@ -33,14 +34,13 @@ const zoomActorsInit = () => {
                     })
                 );
             });
-        }
-    );
+        });
 };
 
 const fullScreenActorsInit = () => {
     let canvasEl = document.querySelector('body canvas');
 
-    canvasEl?.addEventListener('dblclick', (event) => {
+    canvasEl?.addEventListener('dblclick', event => {
         if (!globalThis?.fullScreenToggle) {
             return;
         }
@@ -53,7 +53,7 @@ const fullScreenActorsInit = () => {
         return;
     }
 
-    fullScreenButton.addEventListener('click', (event) => {
+    fullScreenButton.addEventListener('click', event => {
         if (!globalThis?.fullScreenToggle) {
             return;
         }
@@ -69,6 +69,33 @@ const init = elSelector => {
 
     fullScreenActorsInit();
     zoomActorsInit();
+
+    const CONFIG = {
+        defaultZoom: 50,
+        keepZoomPreference: true,
+    }
+
+    const setContainerWidth = (value = CONFIG?.defaultZoom, keepPreference = true) => {
+        if (typeof value === 'string' && value.endsWith('%')) {
+            value = value.slice(0, value.indexOf('%')).trim();
+        }
+
+        value = new RegExp('^((100)|([1-9])0)$').test(`${value}`)
+            ? Number(value)
+            : CONFIG?.defaultZoom;
+
+        value = isNaN(value) ? CONFIG?.defaultZoom : value;
+
+        if (!keepPreference || !CONFIG?.keepZoomPreference) {
+            localStorage.removeItem('zoom_level');
+        }
+
+        if (keepPreference || CONFIG?.keepZoomPreference) {
+            localStorage.setItem('zoom_level', value);
+        }
+
+        container.style.width = `${value}%`;
+    };
 
     let container = document.querySelector(elSelector);
 
@@ -282,18 +309,18 @@ const init = elSelector => {
 
             newWidth = newWidth <= 10 ? 10 : newWidth;
 
-            newWidth = new RegExp('^((100)|([1-9])0)$').test(`${newWidth}`)
-                ? Number(newWidth)
-                : 100;
-
-            newWidth = isNaN(newWidth) ? 100 : newWidth;
-
-            container.style.width = `${newWidth}%`;
+            setContainerWidth(newWidth);
             return;
         }
 
         debugLog(`actionCode ${actionCode}`, event);
     });
+
+    const initZoomValue = localStorage.getItem('zoom_level') ?? CONFIG?.defaultZoom ?? 50;
+
+    if (initZoomValue) {
+        setContainerWidth(initZoomValue);
+    }
 };
 
 document.addEventListener('DOMContentLoaded', event => {
