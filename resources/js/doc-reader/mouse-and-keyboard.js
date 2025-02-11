@@ -251,6 +251,11 @@ const init = elSelector => {
             return;
         }
 
+        if (['f', 'F'].includes(actionCode)) {
+            globalThis?.fullScreenToggle();
+            return;
+        }
+
         if (['ArrowUp', 'ArrowDown'].includes(actionCode)) {
             let toCalc = event?.shiftKey ? 5 : 15;
 
